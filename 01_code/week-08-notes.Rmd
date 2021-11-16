@@ -1,0 +1,289 @@
+---
+title: "week_08_notes"
+author: "Andrew Nalundasan"
+date: "11/14/2021"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Overview video
+
++ Chapter 8 - summary chapter to put things together
++ Helpful to work on DTC projects
++ collect data and get TS
++ TS often has deterministic time trait or seasonality
+
+    + need to remove these trends by using log difference
+    + growth rate - good explanation of something
+    + THEN apply different linear models (MA or AR models)
+
++ plot ACF and PACF and analyze pattern
++ pattern will determine model to use
++ chapter 8 will teach us how to determine best model for us to use
+
+    + t-test and F-test to determine how many regressors to use in our model
+    + residuals and white noise
+    + effective even in cross sectional data
+    
++ chapter 9 will help even further for TS
++ chapter 10 will help much more as well
+
+
+## Chapter 8 Lecture Videos
+
++ forecasting process and how to select models
++ will do this even for cross sectional data
+
++ steps: 
+
+    1. Plot the data and notice it is not stationarity
+    2. take the log difference to get the growth rate
+        + variance
+        + apply linear models to get the distribution of TS
+    3. Plot histogram
+    4. get summary statistics
+    + forecast made on original plot in (1)
+    
++ Autocorrelation Function
+
+    + distribution decays exponentionally, sharp cutoff at some point
+    + ACF graudally fades away
+    + choose 6 models
+
++ check significance from all models
+
+    + p-value < 0.05
+
++ get estimation of coefficients from each model
++ standard error of regression - the smaller the better
++ determine stationarity by looking at length and AR roots ( must be < 1)
++ draw residual plot to assess white noise
+    
+    + check the Q-statistic
+    
++ probability - the larger the better. higher probability to reject the null
+
+    + the null is white noise or 0's
+
++ for MA model
+
++ t-statistics - the larger the better
++ invertibility - should be < 1
++ compare residual variance - the smaller the better
++ less regressors the better
++ adjusted R2 is important when choosing models
++ growth rate of SD housing price will be < 0.62%
+
++ in-sample assessment
+
+## External Videos
+
+
+### ARMA Model
+
++ ARMA(1, 1) is most basic model of them all 
+
+    + (AR, MA)
+    + is there a natural shutoff after a certain number of lags
+    
++ ACF informs the MA order
+
+    + measures the average effects
+    + order of MA is derived from how many spikes are significant
+    
++ PACF informs the AR order
+
+    + measures direct effects
+    + order of MA is derived from how many spikes are significant
+    
+### ARIMA Model
+
++ ARMA requires the TS to be stationary
+
+    + Constant mean
+    + Constant variance
+    
++ Use ARIMA in situations when mean is NOT constant
+
+    + I <- Integrated
+    + instead of predicting TS itself, we are finding differences from one time stamp to another time stamp
+    
++ Create a new TS called Z_t
+
+    + One time point - Z_t
+    + After the transformation, we hover around some mean (achieve stationarity somewhat)
+    
++ ARIMA(p, d, q)
+
+    + p <- AR order
+    + d <- I order ('difference)
+    + q <- MA order
+    
+    + we're trying to predict the difference in what we're trying to predict
+    
++ summary
+
+    + use ARIMA when TS has obvious linear trend (upward or downward)
+    + use differencing to achieve stationarity
+        + use as low of order as possible
+    
+
+
+
+### Seasonal ARIMA (SARIMA) Model
+
++ why we're doing this: 
+
+    + S <- Seasonality
+        + repeating pattern within a year that happens over and over again over many years
+
++ S <- clear seasonal pattern
++ AR, MA <- value of something at some period depends on the value from a past period
++ I <- there is a trend present (upward or downward)
+
++ m <- number of periods that repeat over the course of a year (4 == quarters, 12 == months)
+
+    + applies to P, D, Q
+        + analog of p, d, q <- same thing but with seasonality component
+        
++ summary
+
+    + seasonality is present
+    + factor in the AR(1) component which is not seasonal
+    + factor in the seasonal MA component, based on the error of 4
+    + simplify the factors by setting things to 0
+
+
+## Week 8 Videos on my notes
+
+1. Check the data
+
++ Check the TS of data
++ If TS is NOT stationary, then make it so by taking log difference
+
+    + after this transformation, we get the growth rate
+    + most likely will achieve stationarity
+    
+2. Model Selection: AR, MA, or ARMA
+
++ Which order should be used?
++ Use a corellelogram to analyze ACF and PACF
++ MA(1) ACF: 
+
+    + lag 1 will be 1
+    + next lags will be close to 0
+    
++ AR(1) ACF:
+
+    + Gradual decay to 0 over each lag
+    
++ If we know a process is AR, how do we choose what order?
+
+    + We must check the PACF 
+
++ AR(1) PACF: 
+
+    + Whenever the lag jumps from significant to insignificant determines the order 
+    + If spike drops below significance threshold at lag 2, then the AR order is 1
+    + If spike drops below significance threshold at lag 3, then the AR order is 2
+    
++ In general, we will have an AR process
+
++ Models: 
+
+    + AR(rho)
+        + ACF: Trails off gradually
+        + PACF: Cuts off after rho lags
+    + MA(sigma)
+        + ACF: Cuts off after sigma lags
+        + PACF: Trails off gradually
+    + ARMA(rho, sigma)
+        + ACF: Trails off gradually
+        + PACF: Trails off gradually
+        
+3. Stationarity and Invertibility
+
++ MA process are all stationary
++ AR process - must check if stationary or not
+
+    + AR(1) is stationary
+        + if abs(a) < 1: 
+    + AR(2) is stationary
+        + if a1 + a2 < 1 and a2 - a1 < 1
+    + AR(rho) use roots of polynomial and NOT coefficient
+    
++ R will report inverted AR roots < 1
+
+    + if roots are < 1: stationary
+    + number of roots == order
+        + if AR(4) process, then 4 roots
+        
++ Invertibility of MA 
+
+    + we need theta < 1 in order to be invertible
+    + MA(sigma) is invertible if all of the roots of the polynomial function is associated with MA process lie outside of the unit circle
+    + R provides the inverted MA roots
+        + these are strictly < 1
+    + MA(4) complex number comes in pairs
+        + combine the length of them and calculate if less than 1
+        + if < 1, then the process is INVERTIBLE!!!
+
+4. Are the residuals white noise?
+
++ we need to ensure that the residuals are white noise
++ residuals 
+
+    + ACF plot lags are ALL within the significance threshold
+    + PACF plot lags are ALL within the significance threshold boundary 
+
++ Q-statistics 
+
+    + rho_hat has a Normal distribution
+        + we can reject the null if the Q-statistic > 1.96
+            + this is at significance level alpha = 5%
+            + we reject Ho
+
+5. Are the parameters statistically significant?
+
++ as done in OLS
++ we use T-ratio or p-value to determine significance
+
+6. R2 balance explanatory power and parsimony requirement
+
++ we want to use as minimal parameters are possible
++ we use adjusted residual variance 
++ AIC (Arkaik formula)
+
+    + m - n_parameters
+    
++ SIC (Schwartz formula)
+
+    + similar idea to AIC
+    
+7. Forecasting
+
++ it is possible to have different forecasts from the same model? OF COURSE!!!
++ different loss functions will determine different optimal forecasts
++ depends on users of forecasts
+
+    + different forecasts for investors vs. mortgage appraisers
+        + due to different loss functions for real estate price
+    + the probability of home price declined by 5.3% is 50%
+        + quantiles:
+            + p --> 5%, 20%, 30%, 50%, 70%, 80%, 90%
+            + get the z-value from the z table
+            + report on the 5% of quantile for random variable y
+        
+        
+
+
+## 
